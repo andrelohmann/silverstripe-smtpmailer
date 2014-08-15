@@ -1,0 +1,1 @@
+# Fork of http://www.silverstripe.org/smtpmailer-module/
