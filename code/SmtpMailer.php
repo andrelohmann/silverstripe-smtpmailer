@@ -14,82 +14,6 @@ class SmtpMailer extends Mailer {
     private static $debug_messaging_level = 0;
     private static $language_of_message = 'en';
     
-    public static function set_charset_encoding($value){
-        self::$charset_encoding = $value;
-    }
-    
-    public static function get_charset_encoding(){
-        return self::$charset_encoding;
-    }
-    
-    public static function set_smtp_server_address($value){
-        self::$smtp_server_address = $value;
-    }
-    
-    public static function get_smtp_server_address(){
-        return self::$smtp_server_address;
-    }
-    
-    public static function set_smtp_server_port($value){
-        self::$smtp_server_port = $value;
-    }
-    
-    public static function get_smtp_server_port(){
-        return self::$smtp_server_port;
-    }
-    
-    /**
-     * Set to '' or 'tls' or 'ssl'
-     * @param type $value
-     */
-    public static function set_use_secure_connection($value){
-        self::$use_secure_connection = $value;
-    }
-    
-    public static function get_use_secure_connection(){
-        return self::$use_secure_connection;
-    }
-    
-    public static function set_do_authenticate($value){
-        self::$do_authenticate = $value;
-    }
-    
-    public static function get_do_authenticate(){
-        return self::$do_authenticate;
-    }
-    
-    public static function set_username($value){
-        self::$username = $value;
-    }
-    
-    public static function get_username(){
-        return self::$username;
-    }
-    
-    public static function set_password($value){
-        self::$password = $value;
-    }
-    
-    public static function get_password(){
-        return self::$password;
-    }
-    
-    public static function set_debug_messaging_level($value){
-        self::$debug_messaging_level = $value;
-    }
-    
-    public static function get_debug_messaging_level(){
-        return self::$debug_messaging_level;
-    }
-    
-    public static function set_language_of_message($value){
-        self::$language_of_message = $value;
-    }
-    
-    public static function get_language_of_message(){
-        return self::$language_of_message;
-    }
-    
     protected $mailer = null;
     
     /*function __construct( $mailer = null ){
@@ -101,17 +25,17 @@ class SmtpMailer extends Mailer {
         if( null == $this->mailer ) {
             $this->mailer = new PHPMailer( true );
             $this->mailer->IsSMTP();
-            $this->mailer->CharSet = self::get_charset_encoding();
-            $this->mailer->Host = self::get_smtp_server_address();
-            $this->mailer->Port = self::get_smtp_server_port();
-            $this->mailer->SMTPSecure = self::get_use_secure_connection();
-            $this->mailer->SMTPAuth = self::get_do_authenticate();
+            $this->mailer->CharSet = self::config()->charset_encoding;
+            $this->mailer->Host = self::config()->smtp_server_address;
+            $this->mailer->Port = self::config()->smtp_server_port;
+            $this->mailer->SMTPSecure = self::config()->use_secure_connection;
+            $this->mailer->SMTPAuth = self::config()->do_authenticate;
             if( $this->mailer->SMTPAuth ) {
-                $this->mailer->Username = self::get_username();
-                $this->mailer->Password = self::get_password();
+                $this->mailer->Username = self::config()->username;
+                $this->mailer->Password = self::config()->password;
             }
-            $this->mailer->SMTPDebug = self::get_debug_messaging_level();
-            $this->mailer->SetLanguage(self::get_language_of_message());
+            $this->mailer->SMTPDebug = self::config()->debug_messaging_level;
+            $this->mailer->SetLanguage(self::config()->language_of_message);
         }
     }	
 	
@@ -181,7 +105,7 @@ class SmtpMailer extends Mailer {
             $this->mailer->SetFrom( $from );
         }
 
-        $to = Injector::inst()->create('Mailer')->validEmailAddr( $to );
+        $to = Injector::inst()->create('Mailer')->validEmailAddress( $to );
         $this->mailer->ClearAddresses();
         $this->mailer->AddAddress( $to, ucfirst( substr( $to, 0, strpos( $to, '@' ) ) ) ); // For the recipient's name, the string before the @ from the e-mail address is used
         $this->mailer->Subject = $subject;
