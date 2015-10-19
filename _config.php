@@ -15,4 +15,7 @@ Config::inst()->update('SmtpMailer', 'password', SMTPMAILER_PASSWORD); # SMTP se
 Config::inst()->update('SmtpMailer', 'debug_messaging_level', SMTPMAILER_DEBUG_LEVEL); # Print debugging informations. 0 = no debuging, 1 = print errors, 2 = print errors and messages, 4 = print full activity
 Config::inst()->update('SmtpMailer', 'language_of_message', SMTPMAILER_LANGUAGE); # Language for messages. Look into code/vendor/language for available languages
 
-if(defined('LOG_EMAIL')) SS_Log::add_writer(new SMTP_LogEmailWriter(LOG_EMAIL), SS_Log::NOTICE, '<=');
+if(defined('LOG_EMAIL')){
+    Config::inst()->update('SS_LogEmailWriter', 'send_from', LOG_EMAIL);
+    SS_Log::add_writer(new SMTP_LogEmailWriter(LOG_EMAIL), SS_Log::NOTICE, '<=');
+}
