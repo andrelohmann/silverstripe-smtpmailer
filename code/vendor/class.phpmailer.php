@@ -264,13 +264,120 @@ class PHPMailer {
   private   $CustomHeader   = array();
   private   $message_type   = '';
   private   $boundary       = array();
-  protected $language       = array();
   private   $error_count    = 0;
   private   $sign_cert_file = "";
   private   $sign_key_file  = "";
   private   $sign_key_pass  = "";
   private   $exceptions     = false;
-
+  protected $status_messages = array(
+      'provide_address' => 'You must provide at least one recipient email address.',
+      'mailer_not_supported' => ' mailer is not supported.',
+      'execute' => 'Could not execute: ',
+      'instantiate' => 'Could not instantiate mail function.',
+      'authenticate' => 'SMTP Error: Could not authenticate.',
+      'from_failed' => 'The following From address failed: ',
+      'recipients_failed' => 'SMTP Error: The following recipients failed: ',
+      'data_not_accepted' => 'SMTP Error: Data not accepted.',
+      'connect_host' => 'SMTP Error: Could not connect to SMTP host.',
+      'file_access' => 'Could not access file: ',
+      'file_open' => 'File Error: Could not open file: ',
+      'encoding' => 'Unknown encoding: ',
+      'signing' => 'Signing Error: ',
+      'smtp_error' => 'SMTP server error: ',
+      'empty_message' => 'Message body empty',
+      'invalid_address' => 'Invalid address',
+      'variable_set' => 'Cannot set or reset variable: '
+  );
+  protected $mimes = array(
+      'hqx'   =>  'application/mac-binhex40',
+      'cpt'   =>  'application/mac-compactpro',
+      'doc'   =>  'application/msword',
+      'bin'   =>  'application/macbinary',
+      'dms'   =>  'application/octet-stream',
+      'lha'   =>  'application/octet-stream',
+      'lzh'   =>  'application/octet-stream',
+      'exe'   =>  'application/octet-stream',
+      'class' =>  'application/octet-stream',
+      'psd'   =>  'application/octet-stream',
+      'so'    =>  'application/octet-stream',
+      'sea'   =>  'application/octet-stream',
+      'dll'   =>  'application/octet-stream',
+      'oda'   =>  'application/oda',
+      'pdf'   =>  'application/pdf',
+      'ai'    =>  'application/postscript',
+      'eps'   =>  'application/postscript',
+      'ps'    =>  'application/postscript',
+      'smi'   =>  'application/smil',
+      'smil'  =>  'application/smil',
+      'mif'   =>  'application/vnd.mif',
+      'xls'   =>  'application/vnd.ms-excel',
+      'ppt'   =>  'application/vnd.ms-powerpoint',
+      'wbxml' =>  'application/vnd.wap.wbxml',
+      'wmlc'  =>  'application/vnd.wap.wmlc',
+      'dcr'   =>  'application/x-director',
+      'dir'   =>  'application/x-director',
+      'dxr'   =>  'application/x-director',
+      'dvi'   =>  'application/x-dvi',
+      'gtar'  =>  'application/x-gtar',
+      'php'   =>  'application/x-httpd-php',
+      'php4'  =>  'application/x-httpd-php',
+      'php3'  =>  'application/x-httpd-php',
+      'phtml' =>  'application/x-httpd-php',
+      'phps'  =>  'application/x-httpd-php-source',
+      'js'    =>  'application/x-javascript',
+      'swf'   =>  'application/x-shockwave-flash',
+      'sit'   =>  'application/x-stuffit',
+      'tar'   =>  'application/x-tar',
+      'tgz'   =>  'application/x-tar',
+      'xhtml' =>  'application/xhtml+xml',
+      'xht'   =>  'application/xhtml+xml',
+      'zip'   =>  'application/zip',
+      'mid'   =>  'audio/midi',
+      'midi'  =>  'audio/midi',
+      'mpga'  =>  'audio/mpeg',
+      'mp2'   =>  'audio/mpeg',
+      'mp3'   =>  'audio/mpeg',
+      'aif'   =>  'audio/x-aiff',
+      'aiff'  =>  'audio/x-aiff',
+      'aifc'  =>  'audio/x-aiff',
+      'ram'   =>  'audio/x-pn-realaudio',
+      'rm'    =>  'audio/x-pn-realaudio',
+      'rpm'   =>  'audio/x-pn-realaudio-plugin',
+      'ra'    =>  'audio/x-realaudio',
+      'rv'    =>  'video/vnd.rn-realvideo',
+      'wav'   =>  'audio/x-wav',
+      'bmp'   =>  'image/bmp',
+      'gif'   =>  'image/gif',
+      'jpeg'  =>  'image/jpeg',
+      'jpg'   =>  'image/jpeg',
+      'jpe'   =>  'image/jpeg',
+      'png'   =>  'image/png',
+      'tiff'  =>  'image/tiff',
+      'tif'   =>  'image/tiff',
+      'css'   =>  'text/css',
+      'html'  =>  'text/html',
+      'htm'   =>  'text/html',
+      'shtml' =>  'text/html',
+      'txt'   =>  'text/plain',
+      'text'  =>  'text/plain',
+      'log'   =>  'text/plain',
+      'rtx'   =>  'text/richtext',
+      'rtf'   =>  'text/rtf',
+      'xml'   =>  'text/xml',
+      'xsl'   =>  'text/xml',
+      'mpeg'  =>  'video/mpeg',
+      'mpg'   =>  'video/mpeg',
+      'mpe'   =>  'video/mpeg',
+      'qt'    =>  'video/quicktime',
+      'mov'   =>  'video/quicktime',
+      'avi'   =>  'video/x-msvideo',
+      'movie' =>  'video/x-sgi-movie',
+      'doc'   =>  'application/msword',
+      'word'  =>  'application/msword',
+      'xl'    =>  'application/excel',
+      'eml'   =>  'message/rfc822'
+  );
+  
   /////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////
@@ -400,17 +507,16 @@ class PHPMailer {
    */
   private function AddAnAddress($kind, $address, $name = '') {
     if (!preg_match('/^(to|cc|bcc|ReplyTo)$/', $kind)) {
-      echo 'Invalid recipient array: ' . kind;
+      throw new phpmailerException('Invalid recipient array: ' . $kind);
       return false;
     }
     $address = trim($address);
     $name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
     if (!self::ValidateAddress($address)) {
-      $this->SetError($this->Lang('invalid_address').': '. $address);
+      $this->SetError($this->Stat('invalid_address').': '. $address);
       if ($this->exceptions) {
-        throw new phpmailerException($this->Lang('invalid_address').': '.$address);
+        throw new phpmailerException($this->Stat('invalid_address').': '.$address);
       }
-      echo $this->Lang('invalid_address').': '.$address;
       return false;
     }
   if ($kind != 'ReplyTo') {
@@ -438,11 +544,10 @@ class PHPMailer {
     $address = trim($address);
     $name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
     if (!self::ValidateAddress($address)) {
-      $this->SetError($this->Lang('invalid_address').': '. $address);
+      $this->SetError($this->Stat('invalid_address').': '. $address);
       if ($this->exceptions) {
-        throw new phpmailerException($this->Lang('invalid_address').': '.$address);
+        throw new phpmailerException($this->Stat('invalid_address').': '.$address);
       }
-      echo $this->Lang('invalid_address').': '.$address;
       return false;
     }
   $this->From = $address;
@@ -484,9 +589,8 @@ class PHPMailer {
    * @return bool
    */
   public function Send() {
-    try {
       if ((count($this->to) + count($this->cc) + count($this->bcc)) < 1) {
-        throw new phpmailerException($this->Lang('provide_address'), self::STOP_CRITICAL);
+        throw new phpmailerException($this->Stat('provide_address'), self::STOP_CRITICAL);
       }
 
       // Set whether the message is multipart/alternative
@@ -500,7 +604,7 @@ class PHPMailer {
       $body = $this->CreateBody();
 
       if (empty($this->Body)) {
-        throw new phpmailerException($this->Lang('empty_message'), self::STOP_CRITICAL);
+        throw new phpmailerException($this->Stat('empty_message'), self::STOP_CRITICAL);
       }
 
       // Choose the mailer and send through it
@@ -513,15 +617,6 @@ class PHPMailer {
         default:
           return $this->MailSend($header, $body);
       }
-
-    } catch (phpmailerException $e) {
-      $this->SetError($e->getMessage());
-      if ($this->exceptions) {
-        throw $e;
-      }
-      echo $e->getMessage()."\n";
-      return false;
-    }
   }
 
   /**
@@ -538,13 +633,13 @@ class PHPMailer {
       $sendmail = sprintf("%s -oi -t", escapeshellcmd($this->Sendmail));
     }
     if(!@$mail = popen($sendmail, 'w')) {
-      throw new phpmailerException($this->Lang('execute') . $this->Sendmail, self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('execute') . $this->Sendmail, self::STOP_CRITICAL);
     }
     fputs($mail, $header);
     fputs($mail, $body);
     $result = pclose($mail);
     if($result != 0) {
-      throw new phpmailerException($this->Lang('execute') . $this->Sendmail, self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('execute') . $this->Sendmail, self::STOP_CRITICAL);
     }
     return true;
   }
@@ -587,7 +682,7 @@ class PHPMailer {
       ini_set('sendmail_from', $old_from);
     }
     if(!$rt) {
-      throw new phpmailerException($this->Lang('instantiate'), self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('instantiate'), self::STOP_CRITICAL);
     }
     return true;
   }
@@ -606,11 +701,11 @@ class PHPMailer {
     $bad_rcpt = array();
 
     if(!$this->SmtpConnect()) {
-      throw new phpmailerException($this->Lang('smtp_connect_failed'), self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('smtp_connect_failed'), self::STOP_CRITICAL);
     }
     $smtp_from = ($this->Sender == '') ? $this->From : $this->Sender;
     if(!$this->smtp->Mail($smtp_from)) {
-      throw new phpmailerException($this->Lang('from_failed') . $smtp_from, self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('from_failed') . $smtp_from, self::STOP_CRITICAL);
     }
 
     // Attempt to send attach all recipients
@@ -631,10 +726,10 @@ class PHPMailer {
     }
     if (count($bad_rcpt) > 0 ) { //Create error message for any bad addresses
       $badaddresses = implode(', ', $bad_rcpt);
-      throw new phpmailerException($this->Lang('recipients_failed') . $badaddresses);
+      throw new phpmailerException($this->Stat('recipients_failed') . $badaddresses);
     }
     if(!$this->smtp->Data($header . $body)) {
-      throw new phpmailerException($this->Lang('data_not_accepted'), self::STOP_CRITICAL);
+      throw new phpmailerException($this->Stat('data_not_accepted'), self::STOP_CRITICAL);
     }
     if($this->SMTPKeepAlive == true) {
       $this->smtp->Reset();
@@ -681,7 +776,7 @@ class PHPMailer {
 
           if ($tls) {
             if (!$this->smtp->StartTLS()) {
-              throw new phpmailerException($this->Lang('tls'));
+              throw new phpmailerException($this->Stat('tls'));
             }
 
             //We must resend HELO after tls negotiation
@@ -691,13 +786,13 @@ class PHPMailer {
           $connection = true;
           if ($this->SMTPAuth) {
             if (!$this->smtp->Authenticate($this->Username, $this->Password)) {
-              throw new phpmailerException($this->Lang('authenticate'));
+              throw new phpmailerException($this->Stat('authenticate'));
             }
           }
         }
         $index++;
         if (!$connection) {
-          throw new phpmailerException($this->Lang('connect_host'));
+          throw new phpmailerException($this->Stat('connect_host'));
         }
       }
     } catch (phpmailerException $e) {
@@ -718,51 +813,6 @@ class PHPMailer {
         $this->smtp->Close();
       }
     }
-  }
-
-  /**
-  * Sets the language for all class error messages.
-  * Returns false if it cannot load the language file.  The default language is English.
-  * @param string $langcode ISO 639-1 2-character language code (e.g. Portuguese: "br")
-  * @param string $lang_path Path to the language file directory
-  * @access public
-  */
-  function SetLanguage($langcode = 'en', $lang_path = 'language/') {
-    //Define full set of translatable strings
-    $PHPMAILER_LANG = array(
-      'provide_address' => 'You must provide at least one recipient email address.',
-      'mailer_not_supported' => ' mailer is not supported.',
-      'execute' => 'Could not execute: ',
-      'instantiate' => 'Could not instantiate mail function.',
-      'authenticate' => 'SMTP Error: Could not authenticate.',
-      'from_failed' => 'The following From address failed: ',
-      'recipients_failed' => 'SMTP Error: The following recipients failed: ',
-      'data_not_accepted' => 'SMTP Error: Data not accepted.',
-      'connect_host' => 'SMTP Error: Could not connect to SMTP host.',
-      'file_access' => 'Could not access file: ',
-      'file_open' => 'File Error: Could not open file: ',
-      'encoding' => 'Unknown encoding: ',
-      'signing' => 'Signing Error: ',
-      'smtp_error' => 'SMTP server error: ',
-      'empty_message' => 'Message body empty',
-      'invalid_address' => 'Invalid address',
-      'variable_set' => 'Cannot set or reset variable: '
-    );
-    //Overwrite language-specific strings. This way we'll never have missing translations - no more "language string failed to load"!
-    $l = true;
-    if ($langcode != 'en') { //There is no English translation file
-      $l = @include $lang_path.'phpmailer.lang-'.$langcode.'.php';
-    }
-    $this->language = $PHPMAILER_LANG;
-    return ($l == true); //Returns false if language not found
-  }
-
-  /**
-  * Return the current array of language strings
-  * @return array
-  */
-  public function GetTranslations() {
-    return $this->language;
   }
 
   /////////////////////////////////////////////////
@@ -1117,7 +1167,7 @@ class PHPMailer {
         } else {
           @unlink($file);
           @unlink($signed);
-          throw new phpmailerException($this->Lang("signing").openssl_error_string());
+          throw new phpmailerException($this->Stat("signing").openssl_error_string());
         }
       } catch (phpmailerException $e) {
         $body = '';
@@ -1218,7 +1268,7 @@ class PHPMailer {
   public function AddAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream') {
     try {
       if ( !@is_file($path) ) {
-        throw new phpmailerException($this->Lang('file_access') . $path, self::STOP_CONTINUE);
+        throw new phpmailerException($this->Stat('file_access') . $path, self::STOP_CONTINUE);
       }
       $filename = basename($path);
       if ( $name == '' ) {
@@ -1241,7 +1291,6 @@ class PHPMailer {
       if ($this->exceptions) {
         throw $e;
       }
-      echo $e->getMessage()."\n";
       if ( $e->getCode() == self::STOP_CRITICAL ) {
         return false;
       }
@@ -1333,7 +1382,7 @@ class PHPMailer {
   private function EncodeFile($path, $encoding = 'base64') {
     try {
       if (!is_readable($path)) {
-        throw new phpmailerException($this->Lang('file_open') . $path, self::STOP_CONTINUE);
+        throw new phpmailerException($this->Stat('file_open') . $path, self::STOP_CONTINUE);
       }
       if (function_exists('get_magic_quotes')) {
         function get_magic_quotes() {
@@ -1382,7 +1431,7 @@ class PHPMailer {
         $encoded = $this->EncodeQP($str);
         break;
       default:
-        $this->SetError($this->Lang('encoding') . $encoding);
+        $this->SetError($this->Stat('encoding') . $encoding);
         break;
     }
     return $encoded;
@@ -1671,7 +1720,7 @@ class PHPMailer {
   public function AddEmbeddedImage($path, $cid, $name = '', $encoding = 'base64', $type = 'application/octet-stream') {
 
     if ( !@is_file($path) ) {
-      $this->SetError($this->Lang('file_access') . $path);
+      $this->SetError($this->Stat('file_access') . $path);
       return false;
     }
 
@@ -1797,7 +1846,7 @@ class PHPMailer {
     if ($this->Mailer == 'smtp' and !is_null($this->smtp)) {
       $lasterror = $this->smtp->getError();
       if (!empty($lasterror) and array_key_exists('smtp_msg', $lasterror)) {
-        $msg .= '<p>' . $this->Lang('smtp_error') . $lasterror['smtp_msg'] . "</p>\n";
+        $msg .= '<p>' . $this->Stat('smtp_error') . $lasterror['smtp_msg'] . "</p>\n";
       }
     }
     $this->ErrorInfo = $msg;
@@ -1837,19 +1886,16 @@ class PHPMailer {
   }
 
   /**
-   * Returns a message in the appropriate language.
+   * Returns the status message.
    * @access private
    * @return string
    */
-  private function Lang($key) {
-    if(count($this->language) < 1) {
-      $this->SetLanguage('en'); // set the default language
-    }
+  private function Stat($key) {
 
-    if(isset($this->language[$key])) {
-      return $this->language[$key];
+    if(isset($this->status_messages[$key])) {
+      return $this->status_messages[$key];
     } else {
-      return 'Language string failed to load: ' . $key;
+      return 'Status message string failed to load: ' . $key;
     }
   }
 
@@ -1927,96 +1973,7 @@ class PHPMailer {
    * @static
    */
   public static function _mime_types($ext = '') {
-    $mimes = array(
-      'hqx'   =>  'application/mac-binhex40',
-      'cpt'   =>  'application/mac-compactpro',
-      'doc'   =>  'application/msword',
-      'bin'   =>  'application/macbinary',
-      'dms'   =>  'application/octet-stream',
-      'lha'   =>  'application/octet-stream',
-      'lzh'   =>  'application/octet-stream',
-      'exe'   =>  'application/octet-stream',
-      'class' =>  'application/octet-stream',
-      'psd'   =>  'application/octet-stream',
-      'so'    =>  'application/octet-stream',
-      'sea'   =>  'application/octet-stream',
-      'dll'   =>  'application/octet-stream',
-      'oda'   =>  'application/oda',
-      'pdf'   =>  'application/pdf',
-      'ai'    =>  'application/postscript',
-      'eps'   =>  'application/postscript',
-      'ps'    =>  'application/postscript',
-      'smi'   =>  'application/smil',
-      'smil'  =>  'application/smil',
-      'mif'   =>  'application/vnd.mif',
-      'xls'   =>  'application/vnd.ms-excel',
-      'ppt'   =>  'application/vnd.ms-powerpoint',
-      'wbxml' =>  'application/vnd.wap.wbxml',
-      'wmlc'  =>  'application/vnd.wap.wmlc',
-      'dcr'   =>  'application/x-director',
-      'dir'   =>  'application/x-director',
-      'dxr'   =>  'application/x-director',
-      'dvi'   =>  'application/x-dvi',
-      'gtar'  =>  'application/x-gtar',
-      'php'   =>  'application/x-httpd-php',
-      'php4'  =>  'application/x-httpd-php',
-      'php3'  =>  'application/x-httpd-php',
-      'phtml' =>  'application/x-httpd-php',
-      'phps'  =>  'application/x-httpd-php-source',
-      'js'    =>  'application/x-javascript',
-      'swf'   =>  'application/x-shockwave-flash',
-      'sit'   =>  'application/x-stuffit',
-      'tar'   =>  'application/x-tar',
-      'tgz'   =>  'application/x-tar',
-      'xhtml' =>  'application/xhtml+xml',
-      'xht'   =>  'application/xhtml+xml',
-      'zip'   =>  'application/zip',
-      'mid'   =>  'audio/midi',
-      'midi'  =>  'audio/midi',
-      'mpga'  =>  'audio/mpeg',
-      'mp2'   =>  'audio/mpeg',
-      'mp3'   =>  'audio/mpeg',
-      'aif'   =>  'audio/x-aiff',
-      'aiff'  =>  'audio/x-aiff',
-      'aifc'  =>  'audio/x-aiff',
-      'ram'   =>  'audio/x-pn-realaudio',
-      'rm'    =>  'audio/x-pn-realaudio',
-      'rpm'   =>  'audio/x-pn-realaudio-plugin',
-      'ra'    =>  'audio/x-realaudio',
-      'rv'    =>  'video/vnd.rn-realvideo',
-      'wav'   =>  'audio/x-wav',
-      'bmp'   =>  'image/bmp',
-      'gif'   =>  'image/gif',
-      'jpeg'  =>  'image/jpeg',
-      'jpg'   =>  'image/jpeg',
-      'jpe'   =>  'image/jpeg',
-      'png'   =>  'image/png',
-      'tiff'  =>  'image/tiff',
-      'tif'   =>  'image/tiff',
-      'css'   =>  'text/css',
-      'html'  =>  'text/html',
-      'htm'   =>  'text/html',
-      'shtml' =>  'text/html',
-      'txt'   =>  'text/plain',
-      'text'  =>  'text/plain',
-      'log'   =>  'text/plain',
-      'rtx'   =>  'text/richtext',
-      'rtf'   =>  'text/rtf',
-      'xml'   =>  'text/xml',
-      'xsl'   =>  'text/xml',
-      'mpeg'  =>  'video/mpeg',
-      'mpg'   =>  'video/mpeg',
-      'mpe'   =>  'video/mpeg',
-      'qt'    =>  'video/quicktime',
-      'mov'   =>  'video/quicktime',
-      'avi'   =>  'video/x-msvideo',
-      'movie' =>  'video/x-sgi-movie',
-      'doc'   =>  'application/msword',
-      'word'  =>  'application/msword',
-      'xl'    =>  'application/excel',
-      'eml'   =>  'message/rfc822'
-    );
-    return (!isset($mimes[strtolower($ext)])) ? 'application/octet-stream' : $mimes[strtolower($ext)];
+    return (!isset($this->mimes[strtolower($ext)])) ? 'application/octet-stream' : $this->mimes[strtolower($ext)];
   }
 
   /**

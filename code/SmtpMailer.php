@@ -22,21 +22,25 @@ class SmtpMailer extends Mailer {
     }*/
 
     protected function instanciate(){
-        if( null == $this->mailer ) {
-            $this->mailer = new PHPMailer( true );
-            $this->mailer->IsSMTP();
-            $this->mailer->CharSet = self::config()->charset_encoding;
-            $this->mailer->Host = self::config()->smtp_server_address;
-            $this->mailer->Port = self::config()->smtp_server_port;
-            $this->mailer->SMTPSecure = self::config()->use_secure_connection;
-            $this->mailer->SMTPAuth = self::config()->do_authenticate;
-            if( $this->mailer->SMTPAuth ) {
-                $this->mailer->Username = self::config()->username;
-                $this->mailer->Password = self::config()->password;
-            }
-            $this->mailer->SMTPDebug = self::config()->debug_messaging_level;
-            $this->mailer->SetLanguage(self::config()->language_of_message);
-        }
+		// create an emailer from Log Mail credentials
+		if(self::config()->credentials != 'default' && isset(self::config()->settings[self::config()->credentials]) && is_array(self::config()->settings['credentials'][self::config()->credentials])){
+            $creds = self::config()->settings['credentials'][self::config()->credentials];
+		}else{
+			$creds = self::config()->settings['credentials']['default'];
+		}
+		
+		$this->mailer = new PHPMailer( true );
+		$this->mailer->IsSMTP();
+		$this->mailer->CharSet = self::config()->settings['charset_encoding'];
+		$this->mailer->SMTPDebug = self::config()->settings['debug_level'];
+		$this->mailer->Host = $creds['server_address'];
+		$this->mailer->Port = $creds['server_port'];
+		$this->mailer->SMTPSecure = $creds['secure_connection'];
+		$this->mailer->SMTPAuth = $creds['do_authenticate'];
+		if( $this->mailer->SMTPAuth ) {
+			$this->mailer->Username = $creds['username'];
+			$this->mailer->Password = $creds['password'];
+		}
     }	
 	
 
@@ -86,14 +90,19 @@ class SmtpMailer extends Mailer {
         } catch( Exception $e ) {
             $this->handleError( $e->getMessage(), $msgForLog );
         }
+		Config::inst()->update('SmtpMailer', 'credentials', 'default');
     }
     
     
     function handleError( $e, $msgForLog ){
-        $msg = $e . $msgForLog;
-        echo( $msg );
-        Debug::log( $msg );
-        die();
+		if( $this->mailer->SMTPDebug > 0 ){
+			$msg = $e . $msgForLog;
+			echo( $msg );
+			Debug::log( $msg );
+			die();
+		}else{
+			user_error("SmtpMailer Error", E_USER_WARNING);
+		}
     }
         
     protected function buildBasicMail( $to, $from, $subject ){
