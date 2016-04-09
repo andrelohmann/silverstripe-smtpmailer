@@ -269,7 +269,7 @@ class PHPMailer {
   private   $sign_key_file  = "";
   private   $sign_key_pass  = "";
   private   $exceptions     = false;
-  protected $status_messages = array(
+  protected static $status_messages = array(
       'provide_address' => 'You must provide at least one recipient email address.',
       'mailer_not_supported' => ' mailer is not supported.',
       'execute' => 'Could not execute: ',
@@ -288,7 +288,7 @@ class PHPMailer {
       'invalid_address' => 'Invalid address',
       'variable_set' => 'Cannot set or reset variable: '
   );
-  protected $mimes = array(
+  protected static $mimes = array(
       'hqx'   =>  'application/mac-binhex40',
       'cpt'   =>  'application/mac-compactpro',
       'doc'   =>  'application/msword',
@@ -1892,8 +1892,8 @@ class PHPMailer {
    */
   private function Stat($key) {
 
-    if(isset($this->status_messages[$key])) {
-      return $this->status_messages[$key];
+    if(isset(self::$status_messages[$key])) {
+      return self::$status_messages[$key];
     } else {
       return 'Status message string failed to load: ' . $key;
     }
@@ -1973,7 +1973,7 @@ class PHPMailer {
    * @static
    */
   public static function _mime_types($ext = '') {
-    return (!isset($this->mimes[strtolower($ext)])) ? 'application/octet-stream' : $this->mimes[strtolower($ext)];
+    return (!isset(self::$mimes[strtolower($ext)])) ? 'application/octet-stream' : self::$mimes[strtolower($ext)];
   }
 
   /**
