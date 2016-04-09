@@ -20,7 +20,8 @@ define('SMTPMAILER', json_encode([
 			"secure_connection" => "ssl", // SMTP encryption method : Set to '' or 'tls' or 'ssl'
 			"do_authenticate" => true, // Turn on SMTP server authentication. Set to false for an anonymous connection
 			"username" => "__EMAILADDRESS__", // SMTP server username, if do_authenticate == true
-			"password" => "__PASSWORD__" // SMTP server password, if do_authenticate == true
+			"password" => "__PASSWORD__", // SMTP server password, if do_authenticate == true
+			"from" => "__EMAILADDRESS__" // From Address: e.g. "My Name" <my.account@gmail.com>, optional, use when from address needs to be fixed
 		],
 		"log" => false // false or array with credentials
 	]

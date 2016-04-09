@@ -41,6 +41,8 @@ class SmtpMailer extends Mailer {
 			$this->mailer->Username = $creds['username'];
 			$this->mailer->Password = $creds['password'];
 		}
+		// set fixed From Address
+		if(isset($creds['from'])) $this->buildFrom($creds['from']);
     }	
 	
 
@@ -106,6 +108,15 @@ class SmtpMailer extends Mailer {
     }
         
     protected function buildBasicMail( $to, $from, $subject ){
+		if(!$this->mailer->From) $this->buildFrom ($from);
+
+        $to = Injector::inst()->create('Mailer')->validEmailAddress( $to );
+        $this->mailer->ClearAddresses();
+        $this->mailer->AddAddress( $to, ucfirst( substr( $to, 0, strpos( $to, '@' ) ) ) ); // For the recipient's name, the string before the @ from the e-mail address is used
+        $this->mailer->Subject = $subject;
+    }
+	
+	protected function buildFrom($from){
         if( preg_match('/(\'|")(.*?)\1[ ]+<[ ]*(.*?)[ ]*>/', $from, $from_splitted ) ) {
             // If $from countain a name, e.g. "My Name" <me@acme.com>
             $this->mailer->SetFrom( $from_splitted[3], $from_splitted[2] );
@@ -113,12 +124,7 @@ class SmtpMailer extends Mailer {
         else {
             $this->mailer->SetFrom( $from );
         }
-
-        $to = Injector::inst()->create('Mailer')->validEmailAddress( $to );
-        $this->mailer->ClearAddresses();
-        $this->mailer->AddAddress( $to, ucfirst( substr( $to, 0, strpos( $to, '@' ) ) ) ); // For the recipient's name, the string before the @ from the e-mail address is used
-        $this->mailer->Subject = $subject;
-    }
+	}
     
     
     protected function addCustomHeaders( $headers ){
