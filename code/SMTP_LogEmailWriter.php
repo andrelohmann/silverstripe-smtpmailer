@@ -19,13 +19,17 @@ class SMTP_LogEmailWriter extends SS_LogEmailWriter {
 		$formattedData = $this->_formatter->format($event);
 		$subject = $formattedData['subject'];
 		$data = $formattedData['data'];
-
-		$email = new Email();
-		$email->setTo($this->emailAddress);
-		$email->setSubject($subject);
-		$email->setBody($data);	
-		$email->setFrom(Config::inst()->get('SS_LogEmailWriter', 'send_from'));
-		$email->send();
+		
+		if(!isset($GLOBALS['LogMailSend'])){
+			$email = new Email();
+			$email->setTo($this->emailAddress);
+			$email->setSubject($subject);
+			$email->setBody($data);	
+			$email->setFrom(Config::inst()->get('SS_LogEmailWriter', 'log_email'));
+			Config::inst()->update('SmtpMailer', 'credentials', 'log'); // choose "log" credentials set
+			$email->send();
+			$GLOBALS['LogMailSend'] = true; // prevent resending logmail, if smtp is the source for the error
+		}
 	}
 }
 ?>
