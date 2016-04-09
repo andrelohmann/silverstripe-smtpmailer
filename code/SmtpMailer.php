@@ -23,7 +23,7 @@ class SmtpMailer extends Mailer {
 
     protected function instanciate(){
 		// create an emailer from Log Mail credentials
-		if(self::config()->credentials != 'default' && isset(self::config()->settings[self::config()->credentials]) && is_array(self::config()->settings['credentials'][self::config()->credentials])){
+		if(self::config()->credentials != 'default' && isset(self::config()->settings['credentials'][self::config()->credentials]) && is_array(self::config()->settings['credentials'][self::config()->credentials])){
             $creds = self::config()->settings['credentials'][self::config()->credentials];
 		}else{
 			$creds = self::config()->settings['credentials']['default'];
