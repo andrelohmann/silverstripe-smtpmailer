@@ -131,6 +131,14 @@ class SmtpMailer extends Mailer {
     	if( null == $headers or !is_array( $headers ) ) $headers = array();
 	    if( !isset( $headers["X-Mailer"] ) ) $headers["X-Mailer"] = X_MAILER;
 	    if( !isset( $headers["X-Priority"] ) ) $headers["X-Priority"] = 3;
+            if(isset($headers["Cc"])){
+                $this->mailer->AddCC($headers["Cc"]);
+                unset($headers["Cc"]);
+            }
+            if(isset($headers["Bcc"])){
+                $this->mailer->AddBCC($headers["Bcc"]);
+                unset($headers["Bcc"]);
+            }
 	
 	    $this->mailer->ClearCustomHeaders();
 	    foreach( $headers as $header_name => $header_value ) {
