@@ -49,6 +49,8 @@ class SmtpMailer extends Mailer {
     /* Overwriting Mailer's function */
     function sendPlain($to, $from, $subject, $plainContent, $attachedFiles = false, $customheaders = false){
         $this->instanciate();
+		// set $from to selected Mailsettings From Address
+		$from = $this->mailer->From;
         $this->mailer->IsHTML( false );
         $this->mailer->Body = $plainContent;
         $this->sendMailViaSmtp( $to, $from, $subject, $attachedFiles, $customheaders, false );
@@ -58,6 +60,8 @@ class SmtpMailer extends Mailer {
     /* Overwriting Mailer's function */
     function sendHTML($to, $from, $subject, $htmlContent, $attachedFiles = false, $customheaders = false, $plainContent = false, $inlineImages = false){
         $this->instanciate();
+		// set $from to selected Mailsettings From Address
+		$from = $this->mailer->From;
         $this->mailer->IsHTML( true );
         if( $inlineImages ) {
             $this->mailer->MsgHTML( $htmlContent, Director::baseFolder() );
