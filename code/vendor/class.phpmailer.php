@@ -230,6 +230,12 @@ class PHPMailer {
   public $SMTPDebug     = false;
 
   /**
+   * Sets SMTP debugging to result in a script stop or go on.
+   * @var bool
+   */
+  public $SMTPDebugStop     = true;
+
+  /**
    * Prevents the SMTP connection from being closed after each mail
    * sending.  If this is set to true then to close the connection
    * requires an explicit call to SmtpClose().
@@ -377,7 +383,7 @@ class PHPMailer {
       'xl'    =>  'application/excel',
       'eml'   =>  'message/rfc822'
   );
-  
+
   /////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////
@@ -519,27 +525,27 @@ class PHPMailer {
       }
       return false;
     }
-  if ($kind != 'ReplyTo') {
-    if (!isset($this->all_recipients[strtolower($address)])) {
+    if ($kind != 'ReplyTo') {
+      if (!isset($this->all_recipients[strtolower($address)])) {
         array_push($this->$kind, array($address, $name));
         $this->all_recipients[strtolower($address)] = true;
-    return true;
+        return true;
       }
-  } else {
-    if (!array_key_exists(strtolower($address), $this->ReplyTo)) {
+    } else {
+      if (!array_key_exists(strtolower($address), $this->ReplyTo)) {
         $this->ReplyTo[strtolower($address)] = array($address, $name);
-    return true;
+        return true;
+      }
     }
-  }
     return false;
   }
 
-/**
- * Set the From and FromName properties
- * @param string $address
- * @param string $name
- * @return boolean
- */
+  /**
+   * Set the From and FromName properties
+   * @param string $address
+   * @param string $name
+   * @return boolean
+   */
   public function SetFrom($address, $name = '') {
     $address = trim($address);
     $name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
@@ -550,9 +556,9 @@ class PHPMailer {
       }
       return false;
     }
-  $this->From = $address;
-  $this->FromName = $name;
-  return true;
+    $this->From = $address;
+    $this->FromName = $name;
+    return true;
   }
 
   /**
@@ -589,34 +595,34 @@ class PHPMailer {
    * @return bool
    */
   public function Send() {
-      if ((count($this->to) + count($this->cc) + count($this->bcc)) < 1) {
-        throw new phpmailerException($this->Stat('provide_address'), self::STOP_CRITICAL);
-      }
+    if ((count($this->to) + count($this->cc) + count($this->bcc)) < 1) {
+      throw new phpmailerException($this->Stat('provide_address'), self::STOP_CRITICAL);
+    }
 
-      // Set whether the message is multipart/alternative
-      if(!empty($this->AltBody)) {
-        $this->ContentType = 'multipart/alternative';
-      }
+    // Set whether the message is multipart/alternative
+    if(!empty($this->AltBody)) {
+      $this->ContentType = 'multipart/alternative';
+    }
 
-      $this->error_count = 0; // reset errors
-      $this->SetMessageType();
-      $header = $this->CreateHeader();
-      $body = $this->CreateBody();
+    $this->error_count = 0; // reset errors
+    $this->SetMessageType();
+    $header = $this->CreateHeader();
+    $body = $this->CreateBody();
 
-      if (empty($this->Body)) {
-        throw new phpmailerException($this->Stat('empty_message'), self::STOP_CRITICAL);
-      }
+    if (empty($this->Body)) {
+      throw new phpmailerException($this->Stat('empty_message'), self::STOP_CRITICAL);
+    }
 
-      // Choose the mailer and send through it
-      switch($this->Mailer) {
-        case 'sendmail':
-          return $this->SendmailSend($header, $body);
-        case 'smtp':
-          return $this->SmtpSend($header, $body);
-        case 'mail':
-        default:
-          return $this->MailSend($header, $body);
-      }
+    // Choose the mailer and send through it
+    switch($this->Mailer) {
+      case 'sendmail':
+        return $this->SendmailSend($header, $body);
+      case 'smtp':
+        return $this->SmtpSend($header, $body);
+      case 'mail':
+      default:
+        return $this->MailSend($header, $body);
+    }
   }
 
   /**
@@ -956,7 +962,7 @@ class PHPMailer {
           // If the encoded char was found at pos 0, it will fit
           // otherwise reduce maxLength to start of the encoded char
           $maxLength = ($encodedCharPos == 0) ? $maxLength :
-          $maxLength - ($lookBack - $encodedCharPos);
+              $maxLength - ($lookBack - $encodedCharPos);
           $foundSplitPos = true;
         } elseif ($dec >= 192) { // First byte of a multi byte character
           // Reduce maxLength to split at start of character
@@ -1276,14 +1282,14 @@ class PHPMailer {
       }
 
       $this->attachment[] = array(
-        0 => $path,
-        1 => $filename,
-        2 => $name,
-        3 => $encoding,
-        4 => $type,
-        5 => false,  // isStringAttachment
-        6 => 'attachment',
-        7 => 0
+          0 => $path,
+          1 => $filename,
+          2 => $name,
+          3 => $encoding,
+          4 => $type,
+          5 => false,  // isStringAttachment
+          6 => 'attachment',
+          7 => 0
       );
 
     } catch (phpmailerException $e) {
@@ -1299,9 +1305,9 @@ class PHPMailer {
   }
 
   /**
-  * Return the current array of attachments
-  * @return array
-  */
+   * Return the current array of attachments
+   * @return array
+   */
   public function GetAttachments() {
     return $this->attachment;
   }
@@ -1460,7 +1466,7 @@ class PHPMailer {
         break;
       case 'comment':
         $x = preg_match_all('/[()"]/', $str, $matches);
-        // Fall-through
+      // Fall-through
       case 'text':
       default:
         $x += preg_match_all('/[\000-\010\013\014\016-\037\177-\377]/', $str, $matches);
@@ -1552,13 +1558,13 @@ class PHPMailer {
   }
 
   /**
-  * Encode string to quoted-printable.
-  * Only uses standard PHP, slow, but will always work
-  * @access public
-  * @param string $string the text to encode
-  * @param integer $line_max Number of chars allowed on a line before wrapping
-  * @return string
-  */
+   * Encode string to quoted-printable.
+   * Only uses standard PHP, slow, but will always work
+   * @access public
+   * @param string $string the text to encode
+   * @param integer $line_max Number of chars allowed on a line before wrapping
+   * @return string
+   */
   public function EncodeQPphp( $input = '', $line_max = 76, $space_conv = false) {
     $hex = array('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
     $lines = preg_split('/(?:\r\n|\r|\n)/', $input);
@@ -1601,17 +1607,17 @@ class PHPMailer {
   }
 
   /**
-  * Encode string to RFC2045 (6.7) quoted-printable format
-  * Uses a PHP5 stream filter to do the encoding about 64x faster than the old version
-  * Also results in same content as you started with after decoding
-  * @see EncodeQPphp()
-  * @access public
-  * @param string $string the text to encode
-  * @param integer $line_max Number of chars allowed on a line before wrapping
-  * @param boolean $space_conv Dummy param for compatibility with existing EncodeQP function
-  * @return string
-  * @author Marcus Bointon
-  */
+   * Encode string to RFC2045 (6.7) quoted-printable format
+   * Uses a PHP5 stream filter to do the encoding about 64x faster than the old version
+   * Also results in same content as you started with after decoding
+   * @see EncodeQPphp()
+   * @access public
+   * @param string $string the text to encode
+   * @param integer $line_max Number of chars allowed on a line before wrapping
+   * @param boolean $space_conv Dummy param for compatibility with existing EncodeQP function
+   * @return string
+   * @author Marcus Bointon
+   */
   public function EncodeQP($string, $line_max = 76, $space_conv = false) {
     if (function_exists('quoted_printable_encode')) { //Use native function if it's available (>= PHP5.3)
       return quoted_printable_encode($string);
@@ -1642,42 +1648,42 @@ class PHPMailer {
    * @return string
    */
   public function EncodeQ ($str, $position = 'text') {
-        // There should not be any EOL in the string
-        $pattern = '';
-        $encoded = str_replace(array("\r", "\n"), '', $str);
-        switch (strtolower($position)) {
-            case 'phrase':
-                // RFC 2047 section 5.3
-                $pattern = '^A-Za-z0-9!*+\/ -';
-                break;
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case 'comment':
-                // RFC 2047 section 5.2
-                $pattern = '\(\)"';
-                // intentional fall-through
-                // for this reason we build the $pattern without including delimiters and []
-            case 'text':
-            default:
-                // RFC 2047 section 5.1
-                // Replace every high ascii, control, =, ? and _ characters
-                $pattern = '\000-\011\013\014\016-\037\075\077\137\177-\377' . $pattern;
-                break;
-        }
-        $matches = array();
-        if (preg_match_all("/[{$pattern}]/", $encoded, $matches)) {
-            // If the string contains an '=', make sure it's the first thing we replace
-            // so as to avoid double-encoding
-            $eqkey = array_search('=', $matches[0]);
-            if ($eqkey !== false) {
-                unset($matches[0][$eqkey]);
-                array_unshift($matches[0], '=');
-            }
-            foreach (array_unique($matches[0]) as $char) {
-                $encoded = str_replace($char, '=' . sprintf('%02X', ord($char)), $encoded);
-            }
-        }
-        // Replace every spaces to _ (more readable than =20)
-        return str_replace(' ', '_', $encoded);
+    // There should not be any EOL in the string
+    $pattern = '';
+    $encoded = str_replace(array("\r", "\n"), '', $str);
+    switch (strtolower($position)) {
+      case 'phrase':
+        // RFC 2047 section 5.3
+        $pattern = '^A-Za-z0-9!*+\/ -';
+        break;
+      /** @noinspection PhpMissingBreakStatementInspection */
+      case 'comment':
+        // RFC 2047 section 5.2
+        $pattern = '\(\)"';
+      // intentional fall-through
+      // for this reason we build the $pattern without including delimiters and []
+      case 'text':
+      default:
+        // RFC 2047 section 5.1
+        // Replace every high ascii, control, =, ? and _ characters
+        $pattern = '\000-\011\013\014\016-\037\075\077\137\177-\377' . $pattern;
+        break;
+    }
+    $matches = array();
+    if (preg_match_all("/[{$pattern}]/", $encoded, $matches)) {
+      // If the string contains an '=', make sure it's the first thing we replace
+      // so as to avoid double-encoding
+      $eqkey = array_search('=', $matches[0]);
+      if ($eqkey !== false) {
+        unset($matches[0][$eqkey]);
+        array_unshift($matches[0], '=');
+      }
+      foreach (array_unique($matches[0]) as $char) {
+        $encoded = str_replace($char, '=' . sprintf('%02X', ord($char)), $encoded);
+      }
+    }
+    // Replace every spaces to _ (more readable than =20)
+    return str_replace(' ', '_', $encoded);
   }
 
   /**
@@ -1693,14 +1699,14 @@ class PHPMailer {
   public function AddStringAttachment($string, $filename, $encoding = 'base64', $type = 'application/octet-stream') {
     // Append to $attachment array
     $this->attachment[] = array(
-      0 => $string,
-      1 => $filename,
-      2 => $filename,
-      3 => $encoding,
-      4 => $type,
-      5 => true,  // isStringAttachment
-      6 => 'attachment',
-      7 => 0
+        0 => $string,
+        1 => $filename,
+        2 => $filename,
+        3 => $encoding,
+        4 => $type,
+        5 => true,  // isStringAttachment
+        6 => 'attachment',
+        7 => 0
     );
   }
 
@@ -1731,14 +1737,14 @@ class PHPMailer {
 
     // Append to $attachment array
     $this->attachment[] = array(
-      0 => $path,
-      1 => $filename,
-      2 => $name,
-      3 => $encoding,
-      4 => $type,
-      5 => false,  // isStringAttachment
-      6 => 'inline',
-      7 => $cid
+        0 => $path,
+        1 => $filename,
+        2 => $name,
+        3 => $encoding,
+        4 => $type,
+        5 => false,  // isStringAttachment
+        6 => 'inline',
+        7 => $cid
     );
 
     return true;
@@ -1977,17 +1983,17 @@ class PHPMailer {
   }
 
   /**
-  * Set (or reset) Class Objects (variables)
-  *
-  * Usage Example:
-  * $page->set('X-Priority', '3');
-  *
-  * @access public
-  * @param string $name Parameter Name
-  * @param mixed $value Parameter Value
-  * NOTE: will not work with arrays, there are no arrays to set/reset
-  * @todo Should this not be using __set() magic function?
-  */
+   * Set (or reset) Class Objects (variables)
+   *
+   * Usage Example:
+   * $page->set('X-Priority', '3');
+   *
+   * @access public
+   * @param string $name Parameter Name
+   * @param mixed $value Parameter Value
+   * NOTE: will not work with arrays, there are no arrays to set/reset
+   * @todo Should this not be using __set() magic function?
+   */
   public function set($name, $value = '') {
     try {
       if (isset($this->$name) ) {
