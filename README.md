@@ -13,6 +13,7 @@ add the following to your _ss_environment.php
 define('SMTPMAILER', json_encode([
 	"charset_encoding" => "utf-8", // E-mails characters encoding, e.g. : 'utf-8' or 'iso-8859-1'
 	"debug_level" => "0", // Print debugging informations. 0 = no debuging, 1 = print errors, 2 = print errors and messages, 4 = print full activity
+    "debug_stop" => true, // Stop Script on debugging. true = echo and die, false = echo can be catched by ob_start(); $var = ob_get_clean();
 	"credentials" => [
 		"default" => [
 			"server_address" => "smtp.gmail.com", // SMTP server address
@@ -35,6 +36,32 @@ default and log credentials are mendatory. if you want to offer different smtp g
 selecting a special credentials set for an email is done by setting the credentials config
 ```php
 Config::inst()->update('SmtpMailer', 'credentials', '__CREDENTIALS_SET__'); // "default" by default
+```
+
+### Example
+
+Example code for fetching debugging return code and using it inside your application
+
+```
+$settings = Config::inst()->get('SmtpMailer', 'settings');
+$settings['debug_level'] = 4;
+$settings['debug_stop'] = false;
+Config::inst()->update('SmtpMailer', 'settings', $settings);
+
+// start collecting the echo messages
+ob_start();
+
+// SEND MAIL
+$email = new Email();
+$email->setTo(__EMAIL__);
+$email->setSubject(__SUBJECT__);
+$email->setBody(__BODY__);
+$success = $email->sendPlain();
+
+// write echo messages into Variable
+$echoes = ob_get_clean();
+
+if(!success) die($echoes);
 ```
 
 ### Notice

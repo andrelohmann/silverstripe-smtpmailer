@@ -126,15 +126,15 @@ class SMTP {
 
     // connect to the smtp server
     $this->smtp_conn = @fsockopen($host,    // the host of the server
-                                 $port,    // the port to use
-                                 $errno,   // error number if any
-                                 $errstr,  // error message if any
-                                 $tval);   // give up after ? secs
+        $port,    // the port to use
+        $errno,   // error number if any
+        $errstr,  // error message if any
+        $tval);   // give up after ? secs
     // verify we connected properly
     if(empty($this->smtp_conn)) {
       $this->error = array("error" => "Failed to connect to server",
-                           "errno" => $errno,
-                           "errstr" => $errstr);
+          "errno" => $errno,
+          "errstr" => $errstr);
       if($this->do_debug >= 1) {
         echo "SMTP -> ERROR: " . $this->error["error"] . ": $errstr ($errno)" . $this->CRLF . '<br />';
       }
@@ -144,7 +144,7 @@ class SMTP {
     // SMTP server can take longer to respond, give longer timeout for first read
     // Windows does not have support for this timeout function
     if(substr(PHP_OS, 0, 3) != "WIN")
-     socket_set_timeout($this->smtp_conn, $tval, 0);
+      socket_set_timeout($this->smtp_conn, $tval, 0);
 
     // get any announcement
     $announce = $this->get_lines();
@@ -184,9 +184,9 @@ class SMTP {
 
     if($code != 220) {
       $this->error =
-         array("error"     => "STARTTLS not accepted from server",
-               "smtp_code" => $code,
-               "smtp_msg"  => substr($rply,4));
+          array("error"     => "STARTTLS not accepted from server",
+              "smtp_code" => $code,
+              "smtp_msg"  => substr($rply,4));
       if($this->do_debug >= 1) {
         echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
       }
@@ -216,7 +216,7 @@ class SMTP {
 
     if($code != 334) {
       $this->error =
-        array("error" => "AUTH not accepted from server",
+          array("error" => "AUTH not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -233,7 +233,7 @@ class SMTP {
 
     if($code != 334) {
       $this->error =
-        array("error" => "Username not accepted from server",
+          array("error" => "Username not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -250,7 +250,7 @@ class SMTP {
 
     if($code != 235) {
       $this->error =
-        array("error" => "Password not accepted from server",
+          array("error" => "Password not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -273,7 +273,7 @@ class SMTP {
       if($sock_status["eof"]) {
         // the socket is valid but we are not connected
         if($this->do_debug >= 1) {
-            echo "SMTP -> NOTICE:" . $this->CRLF . "EOF caught while checking if connected";
+          echo "SMTP -> NOTICE:" . $this->CRLF . "EOF caught while checking if connected";
         }
         $this->Close();
         return false;
@@ -328,7 +328,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-              "error" => "Called Data() without being connected");
+          "error" => "Called Data() without being connected");
       return false;
     }
 
@@ -343,7 +343,7 @@ class SMTP {
 
     if($code != 354) {
       $this->error =
-        array("error" => "DATA command not accepted from server",
+          array("error" => "DATA command not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -437,7 +437,7 @@ class SMTP {
 
     if($code != 250) {
       $this->error =
-        array("error" => "DATA not accepted from server",
+          array("error" => "DATA not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -465,7 +465,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-            "error" => "Called Hello() without being connected");
+          "error" => "Called Hello() without being connected");
       return false;
     }
 
@@ -502,7 +502,7 @@ class SMTP {
 
     if($code != 250) {
       $this->error =
-        array("error" => $hello . " not accepted from server",
+          array("error" => $hello . " not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -535,7 +535,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-              "error" => "Called Mail() without being connected");
+          "error" => "Called Mail() without being connected");
       return false;
     }
 
@@ -551,7 +551,7 @@ class SMTP {
 
     if($code != 250) {
       $this->error =
-        array("error" => "MAIL not accepted from server",
+          array("error" => "MAIL not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -578,7 +578,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-              "error" => "Called Quit() without being connected");
+          "error" => "Called Quit() without being connected");
       return false;
     }
 
@@ -599,8 +599,8 @@ class SMTP {
     if($code != 221) {
       // use e as a tmp var cause Close will overwrite $this->error
       $e = array("error" => "SMTP server rejected quit command",
-                 "smtp_code" => $code,
-                 "smtp_rply" => substr($byemsg,4));
+          "smtp_code" => $code,
+          "smtp_rply" => substr($byemsg,4));
       $rval = false;
       if($this->do_debug >= 1) {
         echo "SMTP -> ERROR: " . $e["error"] . ": " . $byemsg . $this->CRLF . '<br />';
@@ -631,7 +631,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-              "error" => "Called Recipient() without being connected");
+          "error" => "Called Recipient() without being connected");
       return false;
     }
 
@@ -646,7 +646,7 @@ class SMTP {
 
     if($code != 250 && $code != 251) {
       $this->error =
-        array("error" => "RCPT not accepted from server",
+          array("error" => "RCPT not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -674,7 +674,7 @@ class SMTP {
 
     if(!$this->connected()) {
       $this->error = array(
-              "error" => "Called Reset() without being connected");
+          "error" => "Called Reset() without being connected");
       return false;
     }
 
@@ -689,7 +689,7 @@ class SMTP {
 
     if($code != 250) {
       $this->error =
-        array("error" => "RSET failed",
+          array("error" => "RSET failed",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -737,7 +737,7 @@ class SMTP {
 
     if($code != 250) {
       $this->error =
-        array("error" => "SAML not accepted from server",
+          array("error" => "SAML not accepted from server",
               "smtp_code" => $code,
               "smtp_msg" => substr($rply,4));
       if($this->do_debug >= 1) {
@@ -763,7 +763,7 @@ class SMTP {
    */
   public function Turn() {
     $this->error = array("error" => "This method, TURN, of the SMTP ".
-                                    "is not implemented");
+        "is not implemented");
     if($this->do_debug >= 1) {
       echo "SMTP -> NOTICE: " . $this->error["error"] . $this->CRLF . '<br />';
     }
@@ -771,10 +771,10 @@ class SMTP {
   }
 
   /**
-  * Get the current error
-  * @access public
-  * @return array
-  */
+   * Get the current error
+   * @access public
+   * @return array
+   */
   public function getError() {
     return $this->error;
   }
